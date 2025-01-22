@@ -86,3 +86,4 @@ jobs:
 #        asset_path: dist/linux-amd64/xml-tool
 #        asset_name: xml-tool
 #        asset_content_type: application/octet-stream
+
