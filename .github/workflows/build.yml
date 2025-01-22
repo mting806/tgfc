@@ -1,56 +1,71 @@
-name: Build and Release XML Tool for Windows x64
+name: Build and Test
 
-on:
-  push:
-    branches:
-      - main
+on: [push, pull_request]
 
 jobs:
-  build-and-release:
-    name: Build and Release for Windows x64
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: "1.x"
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.17'
 
-      - name: Build binary
-        env:
-          GOOS: windows
-          GOARCH: amd64
-        run: |
-          echo "Building for Windows x64"
-          mkdir -p dist/windows-amd64
-          go build -o dist/windows-amd64/xml-tool.exe ./go/xml-tool/main.go
+    - name: Build Windows binary
+      env:
+        GOOS: windows
+        GOARCH: amd64
+      run: |
+        echo "Building for Windows x64"
+        mkdir -p dist/windows-amd64
+        go build -o dist/windows-amd64/xml-tool.exe ./go/xml-tool/main.go
 
-      - name: Test binary
-        run: |
-          echo "Testing the binary"
-          dist/windows-amd64/xml-tool.exe ./go/xml-tool/orig_xml.xml
-          head -n 20 output.xml
+    - name: Build Linux binary
+      env:
+        GOOS: linux
+        GOARCH: amd64
+      run: |
+        echo "Building for Linux x64"
+        mkdir -p dist/linux-amd64
+        go build -o dist/linux-amd64/xml-tool ./go/xml-tool/main.go
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        with:
-          tag_name: "v${{ github.run_number }}"
-          release_name: "XML Tool Windows x64 v${{ github.run_number }}"
-          draft: false
-          prerelease: false
+    - name: Test Linux binary
+      run: |
+        echo "Testing the Linux binary"
+        dist/linux-amd64/xml-tool ./go/xml-tool/orig_xml.xml
+        head -n 20 output.xml
 
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/windows-amd64/xml-tool.exe
-          asset_name: xml-tool.exe
-          asset_content_type: application/octet-stream
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      with:
+        tag_name: "v${{ github.run_number }}"
+        release_name: "XML Tool v${{ github.run_number }}"
+        draft: false
+        prerelease: false
+
+    - name: Upload Windows Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: dist/windows-amd64/xml-tool.exe
+        asset_name: xml-tool.exe
+        asset_content_type: application/octet-stream
+
+    - name: Upload Linux Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: dist/linux-amd64/xml-tool
+        asset_name: xml-tool
+        asset_content_type: application/octet-stream
