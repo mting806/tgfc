@@ -1,14 +1,13 @@
-name: Build XML Tool for Windows x64
+name: Build and Release XML Tool for Windows x64
 
 on:
   push:
     branches:
       - main
-  pull_request:
 
 jobs:
-  build:
-    name: Build for Windows x64
+  build-and-release:
+    name: Build and Release for Windows x64
     runs-on: ubuntu-latest
 
     steps:
@@ -29,8 +28,23 @@ jobs:
           mkdir -p dist/windows-amd64
           go build -o dist/windows-amd64/xml-tool.exe ./go/xml-tool/main.go
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: xml-tool-windows-amd64
-          path: dist/windows-amd64/
+          tag_name: "v${{ github.run_number }}"
+          release_name: "XML Tool Windows x64 v${{ github.run_number }}"
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/windows-amd64/xml-tool.exe
+          asset_name: xml-tool.exe
+          asset_content_type: application/octet-stream
