@@ -30,8 +30,9 @@ jobs:
           GOOS: ${{ matrix.os }}
           GOARCH: ${{ matrix.arch }}
         run: |
+          echo "Building for OS: $GOOS, ARCH: $GOARCH"
           mkdir -p dist/${{ matrix.os }}-${{ matrix.arch }}
-          go build -o dist/${{ matrix.os }}-${{ matrix.arch }}/xml-tool${{ matrix.os == 'windows' && '.exe' || '' }} tgfc/go/xml-tool/main.go
+          go build -o dist/${{ matrix.os }}-${{ matrix.arch }}/xml-tool${{ matrix.os == 'windows' && '.exe' || '' }} ./go/xml-tool/main.go
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
