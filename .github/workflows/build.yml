@@ -13,7 +13,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
-        go-version: '1.23.5'
+        go-version: '1.17'
 
     - name: Build Windows binary
       env:
@@ -39,8 +39,20 @@ jobs:
         dist/linux-amd64/xml-tool ./go/xml-tool/orig_xmls/gamelist.xml
         head -n 20 output.xml
 
+    - name: Check for release commit message
+      id: check_message
+      run: |
+        if [[ "${{ github.event.head_commit.message }}" == *"[create-release]"* ]]; then
+          echo "Release commit message found."
+          echo "::set-output name=create_release::true"
+        else
+          echo "No release commit message found."
+          echo "::set-output name=create_release::false"
+        fi
+
     - name: Create Release
       id: create_release
+      if: steps.check_message.outputs.create_release == 'true'
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
@@ -51,6 +63,7 @@ jobs:
         prerelease: false
 
     - name: Upload Windows Release Asset
+      if: steps.check_message.outputs.create_release == 'true'
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
@@ -60,12 +73,13 @@ jobs:
         asset_name: xml-tool.exe
         asset_content_type: application/octet-stream
 
-    - name: Upload Linux Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: dist/linux-amd64/xml-tool
-        asset_name: xml-tool
-        asset_content_type: application/octet-stream
+#    - name: Upload Linux Release Asset
+#      if: steps.check_message.outputs.create_release == 'true'
+#      uses: actions/upload-release-asset@v1
+#      env:
+#        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+#      with:
+#        upload_url: ${{ steps.create_release.outputs.upload_url }}
+#        asset_path: dist/linux-amd64/xml-tool
+#        asset_name: xml-tool
+#        asset_content_type: application/octet-stream
