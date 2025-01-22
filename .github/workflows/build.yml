@@ -13,7 +13,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v2
       with:
-        go-version: '1.17'
+        go-version: '1.23.5'
 
     - name: Build Windows binary
       env:
@@ -37,7 +37,7 @@ jobs:
       run: |
         echo "Testing the Linux binary"
         pwd
-        ls -lsa
+        ls -R ./go
 #        dist/linux-amd64/xml-tool ./go/xml-tool/orig_xml.xml
 #        head -n 20 output.xml
 
