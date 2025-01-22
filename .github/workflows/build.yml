@@ -28,6 +28,12 @@ jobs:
           mkdir -p dist/windows-amd64
           go build -o dist/windows-amd64/xml-tool.exe ./go/xml-tool/main.go
 
+      - name: Test binary
+        run: |
+          echo "Testing the binary"
+          dist/windows-amd64/xml-tool.exe ./go/xml-tool/orig_xml.xml
+          head -n 20 output.xml
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1

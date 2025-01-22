@@ -28,8 +28,15 @@ type GameList struct {
 }
 
 func main() {
+	if len(os.Args) < 2 {
+        fmt.Println("Usage: xml-tool <input.xml>")
+        return
+    }
+
+    inputFile := os.Args[1]
+
 	// 读取 XML 文件内容
-	xmlContent, err := os.ReadFile("input.xml")
+	xmlContent, err := os.ReadFile(inputFile)
 	if err != nil {
 		fmt.Println("Error reading XML file:", err)
 		return
